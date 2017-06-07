@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="JpgLib">
+      <UniqueIdentifier>{2c6c2fa6-cb8e-427b-9b95-bc2cdbf50666}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Tracker.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FFT.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="KCFTracker.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageJpeg.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jaricom.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcapimin.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcapistd.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcarith.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jccoefct.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jccolor.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcdctmgr.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jchuff.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcinit.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcmainct.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcmarker.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcmaster.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcomapi.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcparam.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcprepct.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jcsample.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jctrans.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdapimin.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdapistd.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdarith.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdatadst.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdatasrc.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdcoefct.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdcolor.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jddctmgr.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdhuff.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdinput.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdmainct.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdmarker.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdmaster.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdmerge.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdpostct.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdsample.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jdtrans.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jerror.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jfdctflt.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jfdctfst.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jfdctint.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jidctflt.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jidctfst.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jidctint.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jmemmgr.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jmemnobs.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jmyerror.cpp">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\Jpglib.cpp">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jquant1.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jquant2.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\Jpglib\jutils.c">
+      <Filter>JpgLib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FftTool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Tracker.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FFT.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="KCFTracker.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RectTolls.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageJpeg.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jconfig.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jdct.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jerror.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jinclude.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jmemsys.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jmorecfg.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jmyerror.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jpegint.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jpeglib.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\Jpglib.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Jpglib\jversion.h">
+      <Filter>JpgLib</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
