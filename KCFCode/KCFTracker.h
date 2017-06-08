@@ -48,6 +48,9 @@ namespace SK
 
 		void FFT2D(const MatrixXf& in, MatrixXcf& out);
 		void iFFT2D(const MatrixXcf& in, MatrixXf& out);
+
+		void FFT2D_F(const MatrixXf& in, MatrixXcf& out);
+		void iFFT2D_F(const MatrixXcf& in, MatrixXf& out);
 		
 
 		//cv::Point2f detect(cv::Mat z, cv::Mat x, float &peak_value); // Detect object in the current frame. 

@@ -354,6 +354,96 @@ namespace SK
 		}
 	}
 
+	void KCFTracker::FFT2D_F(const MatrixXf& in, MatrixXcf& out)
+	{
+		out.resize(in.rows(), in.cols());
+
+		for (int i = 0; i < in.rows(); i++)
+		{
+			//每一行进行一维fft
+			vector<float> in_row_real;
+			vector<float> in_row_imag;
+			vector<float> out_row_real;
+			vector<float> out_row_imag;
+			for (int j = 0; j < in.cols(); j++)
+			{
+				in_row_real.push_back(in(i, j));
+				in_row_imag.push_back(0);
+			}
+			fft_row.fft1D(in_row_real, in_row_imag, out_row_real, out_row_imag);
+
+			for (size_t j = 0; j < out_row_real.size(); j++)
+			{
+				out(i, j) = complexf(out_row_real[j], out_row_imag[j]);
+			}
+		}
+
+		for (int i = 0; i < out.cols(); i++)
+		{
+			//每一列进行一维fft
+			vector<float> in_col_real;
+			vector<float> in_col_imag;
+			vector<float> out_col_real;
+			vector<float> out_col_imag;
+
+			for (int j = 0; j < out.rows(); j++)
+			{
+				in_col_real.push_back(out(j, i).real());
+				in_col_imag.push_back(out(j, i).imag());
+			}
+			fft_col.fft1D(in_col_real, in_col_imag, out_col_real, out_col_imag);
+			for (size_t j = 0; j < out_col_real.size(); j++)
+			{
+				out(j, i) = complexf(out_col_real[j], out_col_imag[j]);
+			}
+		}
+	}
+
+	void KCFTracker::iFFT2D_F(const MatrixXcf& in, MatrixXf& out)
+	{
+		out.resize(in.rows(), in.cols());
+		MatrixXcf outTmp(in.rows(), in.cols());
+
+		for (int i = 0; i < in.rows(); i++)
+		{
+			//每一行进行一维fft
+			vector<float> in_row_real;
+			vector<float> in_row_imag;
+			vector<float> out_row_real;
+			vector<float> out_row_imag;
+
+			for (int j = 0; j < in.cols(); j++)
+			{
+				in_row_real.push_back(in(i, j).real());
+				in_row_imag.push_back(in(i, j).imag());
+			}
+			fft_row.ifft1D(in_row_real, in_row_imag, out_row_real, out_row_imag);
+			for (size_t j = 0; j < out_row_real.size(); j++)
+			{
+				outTmp(i, j) = complexf(out_row_real[j], out_row_imag[j]);
+			}
+		}
+
+		for (int i = 0; i < out.cols(); i++)
+		{
+			//每一列进行一维fft
+			vector<float> in_col_real;
+			vector<float> in_col_imag;
+			vector<float> out_col_real;
+			vector<float> out_col_imag;
+			for (int j = 0; j < out.rows(); j++)
+			{
+				in_col_real.push_back(outTmp(j, i).real());
+				in_col_imag.push_back(outTmp(j, i).imag());
+			}
+			fft_col.ifft1D(in_col_real, in_col_imag, out_col_real, out_col_imag);
+			for (size_t j = 0; j < out_col_real.size(); j++)
+			{
+				out(j, i) = out_col_real[j];
+			}
+		}
+	}
+
 	void KCFTracker::train(MatrixXf x, float train_interp_factor)
 	{
 		MatrixXf k = gaussianCorrelation(x, x);

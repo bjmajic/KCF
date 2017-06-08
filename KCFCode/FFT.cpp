@@ -116,77 +116,77 @@ void CFFT::fft1D(vector<complexf>& in, vector<complexf>& out)
 	}
 }
 
+void CFFT::fft1D(vector<float>& in_real, vector<float>& in_imag, vector<float>& out_real, vector<float>& out_imag)
+{
+	int inLen = in_real.size();
+	if (inLen != m_nLen)
+	{
+		in_real.resize(m_nLen); //会自动赋值
+		in_imag.resize(m_nLen);
+	}
+	out_real.resize(m_nLen);
+	out_imag.resize(m_nLen);
+
+	bit_reverse_copy(in_real, in_imag, out_real, out_imag);
+
+	for (int s = 0; s < m_nstage; s++)
+	{
+		int distance = m_vecDistance[s];
+		int pairsNum = m_vecOperationPairsNum[s];
+		//float cmf[2] = { m_vecWm[s * 2], m_vecWm[s * 2 + 1] };
+		float cmf_0 = m_vecWm[s * 2];
+		float cmf_1 = m_vecWm[s * 2 + 1];
+
+		for (int k = 0; k < m_nLen; k += distance)
+		{
+			int pairsNumAddK = k + pairsNum;
+			//complexf w(1, 0);
+			//float w[2] = { 1, 0 };
+			float w_0 = 1.0f;
+			float w_1 = 0.0f;
+
+			for (int j = 0; j < pairsNum; ++j) //当前阶段可以组成多少对蝶形运算
+			{
+				int index1 = j + pairsNumAddK;
+				int index2 = k + j;
+				//float vv[2] = { out[index1].real(), out[index1].imag() };
+				float vv_0 = out_real[index1];
+				float vv_1 = out_imag[index1];
+				
+				//float t[2] = { w[0] * vv[0] - w[1] * vv[1], w[0] * vv[1] + w[1] * vv[0] };
+				float t_0 = w_0 * vv_0 - w_1 * vv_1;
+				float t_1 = w_0 * vv_1 + w_1 * vv_0;
+				
+				//float out_index2_r = out[index2].real();
+				//float out_index2_i = out[index2].imag();
+				//float u[2] = { out_index2_r, out_index2_i };
+				float out_index2_r = out_real[index2];
+				float out_index2_i = out_imag[index2];
+				float u_0 = out_index2_r;
+				float u_1 = out_index2_i;
+				
+				//out[index2].real(out_index2_r + t[0]);
+				//out[index2].imag(out_index2_i + t[1]);
+				out_real[index2] = (out_index2_r + t_0);
+				out_imag[index2] = (out_index2_i + t_1);
+				
+				//out[index1].real(u[0] - t[0]);
+				//out[index1].imag(u[1] - t[1]);
+				out_real[index1] = (u_0 - t_0);
+				out_imag[index1] = (u_1 - t_1);
+
+				//w *= cmf;
+				float new_r = w_0 * cmf_0 - w_1 * cmf_1;
+				float new_i = w_0 * cmf_1 + w_1 * cmf_0;
+				w_0 = new_r;
+				w_1 = new_i;
+			}
+		}
+	}
+}
+
 void CFFT::ifft1D(vector<complexf>& in, vector<complexf>& out)
 {
-	//int inLen = in.size();
-	//if (inLen != m_nLen)
-	//{
-	//	in.resize(m_nLen); //会自动赋值
-	//}
-	//out.resize(m_nLen);
-
-	//bit_reverse_copy(in, out);
-	//for (int s = 0; s < m_nstage; s++)
-	//{
-	//	for (int k = 0; k < m_nLen; k += m_vecDistance[s])
-	//	{
-	//		complexf w(1, 0);
-	//		for (int j = 0; j < m_vecOperationPairsNum[s]; ++j) //当前阶段可以组成多少对蝶形运算
-	//		{
-	//			complexf vv = out[k + j + m_vecOperationPairsNum[s]];
-	//			complexf t = w * vv;
-	//			complexf u = out[k + j];
-	//			out[k + j] = u + t;
-	//			out[k + j + m_vecOperationPairsNum[s]] = u - t;
-	//			w = w * conj(m_vecWm[s]);
-	//		}
-	//	}
-	//}
-
-	//int inLen = in.size();
-	//if (inLen != m_nLen)
-	//{
-	//	in.resize(m_nLen); //会自动赋值
-	//}
-	//out.resize(m_nLen);
-
-	//bit_reverse_copy(in, out);
-	//for (int s = 0; s < m_nstage; s++)
-	//{
-
-	//	//int pm_vecOperationPairsNum = m_vecOperationPairsNum[s];
-	//	int distance = m_vecDistance[s];
-	//	int pairsNum = m_vecOperationPairsNum[s];
-	//	complexf cmf = m_vecWm[s];
-
-	//	for (int k = 0; k < m_nLen; k += distance)
-	//	{
-	//		int pairsNumAddK = k + pairsNum;
-	//		complexf w(1, 0);
-	//		for (int j = 0; j < pairsNum; ++j) //当前阶段可以组成多少对蝶形运算
-	//		{
-	//			int index1 = j + pairsNumAddK;
-	//			int index2 = k + j;
-	//			//complexf vv = out[j + pairsNumAddK];
-	//			complexf vv(out[index1].real(), out[index1].imag());
-	//			//complexf t = w * vv;
-	//			complexf t((w.real()*vv.real() - w.imag()*vv.imag()), (w.real()*vv.imag() + w.imag()*vv.real()));
-	//			//complexf u = out[k + j];
-	//			complexf u(out[index2].real(), out[index2].imag());
-	//			//out[k + j] = out[k + j] + t;
-	//			out[index2].real(out[index2].real() + t.real());
-	//			out[index2].imag(out[index2].imag() + t.imag());
-	//			//out[j + pairsNumAddK] = u - t;
-	//			out[index1].real(u.real() - t.real());
-	//			out[index1].imag(u.imag() - t.imag());
-	//			//w *= cmf;
-	//			float new_r = w.real() * cmf.real() + w.imag() * cmf.imag();
-	//			float new_i = w.imag() * cmf.real() - w.real() * cmf.imag();
-	//			w.real(new_r);
-	//			w.imag(new_i);
-	//		}
-	//	}
-	//}
 	int inLen = in.size();
 	if (inLen != m_nLen)
 	{
@@ -247,6 +247,80 @@ void CFFT::ifft1D(vector<complexf>& in, vector<complexf>& out)
 	}
 }
 
+void CFFT::ifft1D(vector<float>& in_real, vector<float>& in_imag, vector<float>& out_real, vector<float>& out_imag)
+{
+	int inLen = in_real.size();
+	if (inLen != m_nLen)
+	{
+		in_real.resize(m_nLen); //会自动赋值
+		in_imag.resize(m_nLen);
+	}
+	out_real.resize(m_nLen);
+	out_imag.resize(m_nLen);
+
+	bit_reverse_copy(in_real, in_imag, out_real, out_imag);
+
+	for (int s = 0; s < m_nstage; s++)
+	{
+		int distance = m_vecDistance[s];
+		int pairsNum = m_vecOperationPairsNum[s];
+		//float cmf[2] = { m_vecWm[s * 2], m_vecWm[s * 2 + 1] };
+		float cmf_0 = m_vecWm[s * 2];
+		float cmf_1 = m_vecWm[s * 2 + 1];
+
+		for (int k = 0; k < m_nLen; k += distance)
+		{
+			int pairsNumAddK = k + pairsNum;
+			//complexf w(1, 0);
+			//float w[2] = { 1, 0 };
+			float w_0 = 1.0f;
+			float w_1 = 0.0f;
+
+			for (int j = 0; j < pairsNum; ++j) //当前阶段可以组成多少对蝶形运算
+			{
+				int index1 = j + pairsNumAddK;
+				int index2 = k + j;
+				//float vv[2] = { out[index1].real(), out[index1].imag() };
+				float vv_0 = out_real[index1];
+				float vv_1 = out_imag[index1];
+
+				//float t[2] = { w[0] * vv[0] - w[1] * vv[1], w[0] * vv[1] + w[1] * vv[0] };
+				float t_0 = w_0 * vv_0 - w_1 * vv_1;
+				float t_1 = w_0 * vv_1 + w_1 * vv_0;
+
+				//float out_index2_r = out[index2].real();
+				//float out_index2_i = out[index2].imag();
+				//float u[2] = { out_index2_r, out_index2_i };
+				float out_index2_r = out_real[index2];
+				float out_index2_i = out_imag[index2];
+				float u_0 = out_index2_r;
+				float u_1 = out_index2_i;
+
+				//out[index2].real(out_index2_r + t[0]);
+				//out[index2].imag(out_index2_i + t[1]);
+				out_real[index2] = (out_index2_r + t_0);
+				out_imag[index2] = (out_index2_i + t_1);
+
+				//out[index1].real(u[0] - t[0]);
+				//out[index1].imag(u[1] - t[1]);
+				out_real[index1] = (u_0 - t_0);
+				out_imag[index1] = (u_1 - t_1);
+
+				//w *= cmf;
+				float new_r = w_0 * cmf_0 + w_1 * cmf_1;
+				float new_i = w_1 * cmf_0 - w_0 * cmf_1;
+				w_0 = new_r;
+				w_1 = new_i;
+			}
+		}
+	}
+	for (int i = 0; i < m_nLen; ++i)
+	{
+		out_real[i] /= m_nLen;
+		out_imag[i] /= m_nLen;
+	}
+}
+
 unsigned int CFFT::bit_rev(unsigned int v, unsigned int maxv)
 {
 	unsigned int t = m_nstage/*log(maxv + 1) / log(2)*/;
@@ -274,5 +348,15 @@ void CFFT::bit_reverse_copy(vector<complexf>& src, vector<complexf>& des)
 	for (int i = 0; i < m_nLen; i++)
 	{
 		des[m_nSoredIndex[i]] = src[i]; //		
+	}
+}
+
+void CFFT::bit_reverse_copy(vector<float>& src_real, vector<float>& src_imag, vector<float>& des_real, vector<float>& des_imag)
+{
+	for (int i = 0; i < m_nLen; i++)
+	{
+		int j = m_nSoredIndex[i];
+		des_real[j] = src_real[i]; //
+		des_imag[j] = src_imag[i]; //
 	}
 }
