@@ -1,11 +1,14 @@
 #include "Tracker.h"
 
-
-Tracker::Tracker()
+namespace SK
 {
-}
+	Tracker::Tracker()
+	{
+	}
 
 
-Tracker::~Tracker()
-{
+	Tracker::~Tracker()
+	{
+	}
+
 }

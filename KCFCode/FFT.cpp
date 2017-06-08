@@ -76,6 +76,8 @@ void CFFT::fft1D(vector<complexf>& in, vector<complexf>& out)
 	{
 		//int m = pow(2, s); //1、用于计算每个阶段的Wn增量, 2、控制每个阶段不同组之间的距离，如第一阶段的距离是2，第二阶段的距离是4
 		//complex wm(cos(2 * pi / m), -sin(2 * pi / m));
+
+
 		for (int k = 0; k < m_nLen; k += m_vecDistance[s])
 		{
 			complexf w(1, 0);

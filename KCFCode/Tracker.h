@@ -1,14 +1,18 @@
 #pragma once
 #include "RectTolls.h"
-using namespace SK;
-class Tracker
+//using namespace SK;
+namespace SK
 {
-public:
-	Tracker();
-	virtual ~Tracker();
-	virtual void Init(Rect& roi, Mat image) = 0;
-	virtual Rect update(Mat image) = 0;
-protected:
-	Rect4f m_roi; 
-};
+	class Tracker
+	{
+	public:
+		Tracker();
+		virtual ~Tracker();
+		virtual void Init(SK::skRect& roi, skMat image) = 0;
+		virtual SK::skRect update(skMat image) = 0;
+	protected:
+		SK::skRect4f m_roi;
+	};
+}
+
 

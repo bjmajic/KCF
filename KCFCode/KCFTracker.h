@@ -9,8 +9,8 @@ namespace SK
 		KCFTracker(bool hog = false, bool fixed_window = true, bool multiscale = false);
 		~KCFTracker();
 
-		virtual void Init(Rect& roi, Mat image) override;
-		virtual Rect update(Mat image) override;
+		virtual void Init(skRect& roi, skMat image) override;
+		virtual skRect update(skMat image) override;
 
 		float interp_factor;
 		float sigma;                 // gaussian kernel bandwidth
@@ -30,7 +30,7 @@ namespace SK
 		//Eigen::MatrixXf _labCentroids;
 
 		//Obtain sub-window from image, with replication-padding and extract features
-		Eigen::MatrixXf getFeatures(const Mat& image, bool inithann, float scale_adjust = 1.0f);
+		Eigen::MatrixXf getFeatures(const skMat& image, bool inithann, float scale_adjust = 1.0f);
 
 		//Initialize Hanning window. Function called only in the first frame.
 		void CreateHanningMats();
@@ -54,7 +54,7 @@ namespace SK
 		void train(MatrixXf x, float train_interp_factor); // train tracker with a single image
 
 		// Detect object in the current frame.
-		Point2f detect(MatrixXf z, MatrixXf x, float &peak_value);
+		skPoint2f detect(MatrixXf z, MatrixXf x, float &peak_value);
 
 	private:
 		CFFT fft_row;  // 对每一行进行fft
@@ -63,7 +63,7 @@ namespace SK
 		bool _hogfeatures;
 		int size_patch[3];
 		float _scale;
-		Size<int> _tmpl_sz;
+		skSize<int> _tmpl_sz;
 		MatrixXf hann;
 		
 	};

@@ -2,8 +2,75 @@
 #define SK_RECTTOOLS_HPP
 #include "Eigen/Dense"
 #include "ImageJpeg.h"
+#include <iostream>
+#include <fstream>
 using namespace Eigen;
-typedef Matrix<unsigned char, Dynamic, Dynamic, RowMajor> Mat;
+typedef Matrix<unsigned char, Dynamic, Dynamic, RowMajor> skMat;
+
+// just for debug, record the res to txt
+
+inline void saveTxt(string savedName, MatrixXf matdata)
+{
+	string basePath = "D:\\KCF\\";
+	basePath = basePath + savedName;
+
+	ofstream of1(basePath);
+	of1.setf(ios::fixed);
+	of1.precision(4);
+	int height = matdata.rows();
+	int width = matdata.cols();
+
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			of1 << matdata(i, j) << "\t";
+		}
+		of1 << "\n";
+	}
+}
+
+inline void saveTxt(string savedName, MatrixXcf matdata)
+{
+	string basePath = "D:\\KCF\\";
+	basePath = basePath + savedName;
+
+	ofstream of1(basePath);
+	//of1.setf(ios::fixed);
+	//of1.precision(4);
+	int height = matdata.rows();
+	int width = matdata.cols();
+
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			of1 << matdata(i, j) << "\t";
+		}
+		of1 << "\n";
+	}
+}
+
+inline void saveTxt(string savedName, skMat matdata)
+{
+	string basePath = "D:\\KCF\\";
+	basePath = basePath + savedName;
+
+	ofstream of1(basePath);
+	//of1.setf(ios::fixed);
+	//of1.precision(4);
+	int height = matdata.rows();
+	int width = matdata.cols();
+
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			of1 << matdata(i, j) << "\t";
+		}
+		of1 << "\n";
+	}
+}
 
 namespace SK
 {
@@ -51,21 +118,21 @@ namespace SK
 		desRect.width = static_cast<T2>(srcRect.width);
 		desRect.height = static_cast<T2>(srcRect.height);
 	}
-	typedef Rect_tag<float> Rect4f;
-	typedef Rect_tag<int> Rect;
+	typedef Rect_tag<float> skRect4f;
+	typedef Rect_tag<int> skRect;
 
 	//定义两个辅助结构
 	template <typename T>
-	struct Size
+	struct skSize
 	{
 		T nWidth;
 		T nHeight;
-		Size(T w, T h)
+		skSize(T w, T h)
 		{
 			nWidth = w;
 			nHeight = h;
 		}
-		Size()
+		skSize()
 		{
 			nWidth = 0;
 			nHeight = 0;
@@ -73,30 +140,30 @@ namespace SK
 	};
 	
 	template<typename T>
-	struct Point
+	struct skPoint
 	{
 		T x;
 		T y;
 
-		Point(T x_, T y_)
+		skPoint(T x_, T y_)
 		{
 			x = x_;
 			y = y_;
 		}
 
-		Point()
+		skPoint()
 		{
 			x = 0; y = 0;
 		}
 	};
 
-	typedef Point<float> Point2f;
+	typedef skPoint<float> skPoint2f;
 
 	//获取rect的中心
 	template<typename T>
-	inline Point<T> center(const Rect_tag<T>& rect)
+	inline skPoint<T> center(const Rect_tag<T>& rect)
 	{
-		return Point<T>(rect.x + rect.width*0.5, rect.y + rect.height*0.5);
+		return skPoint<T>(rect.x + rect.width*0.5, rect.y + rect.height*0.5);
 	}
 
 	//获取rect右下角坐标（x, y)
@@ -151,9 +218,9 @@ namespace SK
 
 	// 获取边框的尺寸（其实就是上下左右四个边各填充多少像素）
 	template <typename t>
-	inline Rect getBorder(const Rect_tag<t> &original, Rect_tag<t> &limited)
+	inline skRect getBorder(const Rect_tag<t> &original, Rect_tag<t> &limited)
 	{
-		Rect res;
+		skRect res;
 		res.x = static_cast<int>(limited.x - original.x);
 		res.y = static_cast<int>(limited.y - original.y);
 		res.width = static_cast<int>(x2(original) - x2(limited));
@@ -162,12 +229,12 @@ namespace SK
 		return res;
 	}
 
-	inline void copyMakeBorder(const Mat &src, Mat &dst, int top, int bottom, int left, int right, int boardtype = 0)
+	inline void copyMakeBorder(const skMat &src, skMat &dst, int top, int bottom, int left, int right, int boardtype = 0)
 	{
 		if (0 == boardtype) // 用0填充
 		{
 			//暂时只能想到以下这个方案，1、声明一个比较大的矩阵, 2、将原矩阵的内容赋值过来，3、填充边缘 4、赋值给dst
-			Mat bigSize;
+			skMat bigSize;
 			bigSize.resize(src.rows() + top + bottom, src.cols() + left + right);
 			bigSize.fill(0);
 			bigSize.block(top, left, src.rows(), src.cols()) = src;
@@ -175,32 +242,33 @@ namespace SK
 		}
 	}
 
-	inline Mat subwindow(const Mat &in, const Rect& window/*, int borderType = cv::BORDER_CONSTANT*/)
+	inline skMat subwindow(const skMat &in, const skRect& window/*, int borderType = cv::BORDER_CONSTANT*/)
 	{
-		Rect cutWindow = window;
+		skRect cutWindow = window;
 		limit<int>(cutWindow, in.cols(), in.rows());
 		if (cutWindow.height <= 0 || cutWindow.width <= 0)assert(0); //return cv::Mat(window.height,window.width,in.type(),0) ;
-		Rect border = getBorder(window, cutWindow);
+		skRect border = getBorder(window, cutWindow);
 
 		//MatrixXf res = in(cutWindow);
-		Mat res = in.block(cutWindow.y, cutWindow.x, cutWindow.height, cutWindow.width);
+		skMat res = in.block(cutWindow.y, cutWindow.x, cutWindow.height, cutWindow.width);
 
-		if (border != Rect(0, 0, 0, 0))
+		if (border != skRect(0, 0, 0, 0))
 		{
 			copyMakeBorder(res, res, border.y, border.height, border.x, border.width);
 		}
 		return res;
 	}
-	inline MatrixXf getGrayImage(const Mat& img)
+	inline MatrixXf getGrayImage(const skMat& img)
 	{
 		MatrixXf resMatrix = img.cast<float>();
-		resMatrix *= 0.003922f;
+		//resMatrix *= 0.003922f;
+		resMatrix /= 255;
 		return resMatrix;
 	}
 
-	inline void Resize(Mat& z, const Size<int>& newSize)
+	inline void Resize(skMat& z, const skSize<int>& newSize)
 	{
-		Mat newZ(z.rows(), z.cols());
+		skMat newZ(z.rows(), z.cols());
 		Zoom(z.data(), z.cols(), z.rows(), newZ.data(), newSize.nHeight, newSize.nHeight);
 		z = newZ;
 	}
@@ -220,6 +288,7 @@ namespace SK
 		img.block(0, cx, cy, cx).swap(img.block(cy, 0, cy, cx));
 
 		//做这步的目的是讲频域的原点移动到图像的中心，详见论文附录A.1
+		//saveTxt("rearrange_img.txt", img);
 	}
 }
 #endif //SK_RECTTOOLS_HPP

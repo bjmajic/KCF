@@ -28,7 +28,7 @@ namespace SK
 		}
 		else
 		{
-			template_size = 96;
+			template_size = 1;
 			scale_step = 1;
 		}
 	}
@@ -37,12 +37,14 @@ namespace SK
 	{
 	}
 
-	void KCFTracker::Init(Rect& roi, Mat image)
+	void KCFTracker::Init(skRect& roi, skMat image)
 	{
 		//m_roi = roi;
 		RectCopy<int, float>(roi, m_roi);
 		assert(roi.width > 0 && roi.height > 0);
 		_tmpl = getFeatures(image, 1);
+
+		//saveTxt("init_tmpl", _tmpl);
 
 		fft_row = CFFT(_tmpl.cols());
 		fft_col = CFFT(_tmpl.rows());
@@ -54,7 +56,7 @@ namespace SK
 		train(_tmpl, 1.0); // train with initial frame
 	}
 
-	Rect KCFTracker::update(Mat image)
+	skRect KCFTracker::update(skMat image)
 	{
 		if (m_roi.x + m_roi.width <= 0) m_roi.x = -m_roi.width + 1;
 		if (m_roi.y + m_roi.height <= 0) m_roi.y = -m_roi.height + 1;
@@ -65,7 +67,7 @@ namespace SK
 		float cy = m_roi.y + m_roi.height / 2.0f;
 
 		float peak_value;
-		Point2f res = detect(_tmpl, getFeatures(image, 0, 1.0f), peak_value);
+		skPoint2f res = detect(_tmpl, getFeatures(image, 0, 1.0f), peak_value);
 
 		if (scale_step != 1)
 		{
@@ -84,15 +86,15 @@ namespace SK
 		MatrixXf x = getFeatures(image, 0);
 		train(x, interp_factor);
 
-		Rect roi;
-		RectCopy<int, float>(roi, m_roi);
+		skRect roi;
+		RectCopy<float, int>(m_roi, roi);
 		return roi;
 		//return Rect(1, 2, 3, 4);
 	}
 
-	Eigen::MatrixXf KCFTracker::getFeatures(const Mat& image, bool inithann, float scale_adjust /*= 1.0f*/)
+	Eigen::MatrixXf KCFTracker::getFeatures(const skMat& image, bool inithann, float scale_adjust /*= 1.0f*/)
 	{
-		Rect extracted_roi;
+		skRect extracted_roi;
 
 		//真实roi区域的中心（未pading之前）
 		float cx = m_roi.x + m_roi.width * 0.5f; 
@@ -129,6 +131,9 @@ namespace SK
 				// 确保像素是偶数
 				_tmpl_sz.nWidth = (_tmpl_sz.nWidth / 2) * 2;
 				_tmpl_sz.nHeight = (_tmpl_sz.nHeight / 2) * 2;
+
+				_tmpl_sz.nWidth = 256;
+				_tmpl_sz.nHeight = 256;
 			}
 		}
 
@@ -141,10 +146,14 @@ namespace SK
 		extracted_roi.y = cy - extracted_roi.height * 0.5;  // 这样中心点没有移动
 
 		Eigen::MatrixXf FeaturesMap;
-		Mat z = SK::subwindow(image, extracted_roi);
+		skMat z = SK::subwindow(image, extracted_roi);
 		if (z.cols() != _tmpl_sz.nWidth || z.rows() != _tmpl_sz.nHeight) {
 			SK::Resize(z, _tmpl_sz);
 		}
+
+		MatrixXf t = z.cast<float>();
+		//saveTxt("init_z.txt", t);
+
 		if (_hogfeatures)
 		{
 		}
@@ -156,6 +165,8 @@ namespace SK
 			size_patch[0] = z.rows();
 			size_patch[1] = z.cols();
 			size_patch[2] = 1;
+
+			//saveTxt("befor_hanning.txt", FeaturesMap);
 		}
 		if (inithann) {
 			CreateHanningMats();
@@ -212,17 +223,26 @@ namespace SK
 		else
 		{
 			//灰度特征
-			MatrixXf c(x1.rows(), x1.cols());
+			//MatrixXf c(x1.rows(), x1.cols());
 
 			MatrixXcf x1_out;
 			MatrixXcf x2_out;
 			FFT2D(x1, x1_out);
 			FFT2D(x2, x2_out);
 
+			//saveTxt("gaussianCorrelation_x1_out.txt", x1_out);
+			//saveTxt("gaussianCorrelation_x2_out.txt", x2_out);
+
+
 			iFFT2D(x1_out.cwiseProduct(x2_out.conjugate()), c);
+
+			//saveTxt("gaussianCorrelation_c.txt", c);
+
 			rearrange(c);
 		}
-		
+
+		//saveTxt("gaussianCorrelation_c_.txt", c);
+
 		MatrixXf d;
 		d = x1.cwiseProduct(x1).sum() + x2.cwiseProduct(x2).sum() - (c * 2).array();
 		d = d / (size_patch[0] * size_patch[1] * size_patch[2]);
@@ -337,8 +357,14 @@ namespace SK
 	void KCFTracker::train(MatrixXf x, float train_interp_factor)
 	{
 		MatrixXf k = gaussianCorrelation(x, x);
+
+		//saveTxt("train_k.txt", k);
+
 		MatrixXcf  k_fft;
 		FFT2D(k, k_fft);
+
+		//saveTxt("train_kfft.txt", k_fft);
+
 		k_fft.array() += lambda;
 		MatrixXcf alphaf = _prob.cwiseQuotient(k_fft);
 
@@ -347,7 +373,7 @@ namespace SK
 
 	}
 
-	SK::Point2f KCFTracker::detect(MatrixXf z, MatrixXf x, float &peak_value)
+	SK::skPoint2f KCFTracker::detect(MatrixXf z, MatrixXf x, float &peak_value)
 	{
 		MatrixXf k = gaussianCorrelation(x, z);
 		//cv::Mat res = (real(fftd(complexMultiplication(_alphaf, fftd(k)), true)));
@@ -355,9 +381,12 @@ namespace SK
 		FFT2D(k, k_fft);
 
 		MatrixXf res;
-		iFFT2D(_alphaf.cwiseProduct(k_fft.conjugate()), res);
+		//iFFT2D(_alphaf.cwiseProduct(k_fft.conjugate()), res);
+		iFFT2D(_alphaf.cwiseProduct(k_fft), res);
 
-		Point<int> pi;
+		//saveTxt("detect_res.txt", res);
+
+		skPoint<int> pi;
 		//float pv;
 		int r = 0;
 		int c = 0;
@@ -365,7 +394,7 @@ namespace SK
 
 
 		//subpixel peak estimation, coordinates will be non-integer
-		Point2f p((float)c, (float)r);
+		skPoint2f p((float)c, (float)r);
 
 		if (pi.x > 0 && pi.x < res.cols() - 1) {
 			p.x += subPixelPeak(res(pi.y, pi.x - 1), peak_value, res(pi.y, pi.x + 1));
