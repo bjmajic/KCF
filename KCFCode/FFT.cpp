@@ -24,8 +24,10 @@ CFFT::CFFT(int n)
 		//int nBaseM = 2;
 		m_vecDistance.push_back(i);
 		m_vecOperationPairsNum.push_back(i / 2);
-		m_vecWm.push_back(complexf(cos(2 * pi / i), -sin(2 * pi / i)));  //complex wm(cos(2 * pi / m), -sin(2 * pi / m)); 此时m = 2
-		
+		//m_vecWm.push_back(complexf(cos(2 * pi / i), -sin(2 * pi / i)));  //complex wm(cos(2 * pi / m), -sin(2 * pi / m)); 此时m = 2
+		m_vecWm.push_back(cos(2 * pi / i));
+		m_vecWm.push_back(-sin(2 * pi / i));
+
 		while (i < n)
 		{
 			i = i << 1;
@@ -34,7 +36,9 @@ CFFT::CFFT(int n)
 			//nBaseM = nBaseM << 1;
 			m_vecDistance.push_back(i);
 			m_vecOperationPairsNum.push_back(i / 2);
-			m_vecWm.push_back(complexf(cos(2 * pi / i), -sin(2 * pi / i)));
+			//m_vecWm.push_back(complexf(cos(2 * pi / i), -sin(2 * pi / i)));
+			m_vecWm.push_back(cos(2 * pi / i));
+			m_vecWm.push_back(-sin(2 * pi / i));
 		}
 
 		m_nZeroNum = i - n;
@@ -74,21 +78,40 @@ void CFFT::fft1D(vector<complexf>& in, vector<complexf>& out)
 	bit_reverse_copy(in, out);
 	for (int s = 0; s < m_nstage; s++)
 	{
-		//int m = pow(2, s); //1、用于计算每个阶段的Wn增量, 2、控制每个阶段不同组之间的距离，如第一阶段的距离是2，第二阶段的距离是4
-		//complex wm(cos(2 * pi / m), -sin(2 * pi / m));
+		
+		//int pm_vecOperationPairsNum = m_vecOperationPairsNum[s];
+		int distance = m_vecDistance[s];
+		int pairsNum = m_vecOperationPairsNum[s];
+		//complexf cmf = m_vecWm[s];
+		float cmf[2] = { m_vecWm[s * 2], m_vecWm[s * 2 + 1] };
 
-
-		for (int k = 0; k < m_nLen; k += m_vecDistance[s])
+		for (int k = 0; k < m_nLen; k += distance)
 		{
-			complexf w(1, 0);
-			for (int j = 0; j < m_vecOperationPairsNum[s]; ++j) //当前阶段可以组成多少对蝶形运算
+			int pairsNumAddK = k + pairsNum;
+			//complexf w(1, 0);
+			float w[2] = { 1, 0 };
+
+			for (int j = 0; j < pairsNum; ++j) //当前阶段可以组成多少对蝶形运算
 			{
-				complexf vv = out[k + j + m_vecOperationPairsNum[s]];
-				complexf t = w * vv;
-				complexf u = out[k + j];
-				out[k + j] = u + t;
-				out[k + j + m_vecOperationPairsNum[s]] = u - t;
-				w = w * m_vecWm[s];
+				int index1 = j + pairsNumAddK;
+				int index2 = k + j;
+				//complexf vv = out[j + pairsNumAddK];
+				complexf vv(out[index1].real(), out[index1].imag());
+				//complexf t = w * vv;
+				complexf t((w.real()*vv.real() - w.imag()*vv.imag()), (w.real()*vv.imag() + w.imag()*vv.real()));
+				//complexf u = out[k + j];
+				complexf u(out[index2].real(), out[index2].imag());
+				//out[k + j] = out[k + j] + t;
+				out[index2].real(out[index2].real() + t.real());
+				out[index2].imag(out[index2].imag() + t.imag());
+				//out[j + pairsNumAddK] = u - t;
+				out[index1].real(u.real() - t.real());
+				out[index1].imag(u.imag() - t.imag());
+				//w *= cmf;
+				float new_r = w.real() * cmf.real() - w.imag() * cmf.imag();
+				float new_i = w.real() * cmf.imag() + w.imag() * cmf.real();
+				w.real(new_r);
+				w.imag(new_i);
 			}
 		}
 	}
@@ -96,6 +119,31 @@ void CFFT::fft1D(vector<complexf>& in, vector<complexf>& out)
 
 void CFFT::ifft1D(vector<complexf>& in, vector<complexf>& out)
 {
+	//int inLen = in.size();
+	//if (inLen != m_nLen)
+	//{
+	//	in.resize(m_nLen); //会自动赋值
+	//}
+	//out.resize(m_nLen);
+
+	//bit_reverse_copy(in, out);
+	//for (int s = 0; s < m_nstage; s++)
+	//{
+	//	for (int k = 0; k < m_nLen; k += m_vecDistance[s])
+	//	{
+	//		complexf w(1, 0);
+	//		for (int j = 0; j < m_vecOperationPairsNum[s]; ++j) //当前阶段可以组成多少对蝶形运算
+	//		{
+	//			complexf vv = out[k + j + m_vecOperationPairsNum[s]];
+	//			complexf t = w * vv;
+	//			complexf u = out[k + j];
+	//			out[k + j] = u + t;
+	//			out[k + j + m_vecOperationPairsNum[s]] = u - t;
+	//			w = w * conj(m_vecWm[s]);
+	//		}
+	//	}
+	//}
+
 	int inLen = in.size();
 	if (inLen != m_nLen)
 	{
@@ -106,21 +154,40 @@ void CFFT::ifft1D(vector<complexf>& in, vector<complexf>& out)
 	bit_reverse_copy(in, out);
 	for (int s = 0; s < m_nstage; s++)
 	{
-		for (int k = 0; k < m_nLen; k += m_vecDistance[s])
+
+		//int pm_vecOperationPairsNum = m_vecOperationPairsNum[s];
+		int distance = m_vecDistance[s];
+		int pairsNum = m_vecOperationPairsNum[s];
+		complexf cmf = m_vecWm[s];
+
+		for (int k = 0; k < m_nLen; k += distance)
 		{
+			int pairsNumAddK = k + pairsNum;
 			complexf w(1, 0);
-			for (int j = 0; j < m_vecOperationPairsNum[s]; ++j) //当前阶段可以组成多少对蝶形运算
+			for (int j = 0; j < pairsNum; ++j) //当前阶段可以组成多少对蝶形运算
 			{
-				complexf vv = out[k + j + m_vecOperationPairsNum[s]];
-				complexf t = w * vv;
-				complexf u = out[k + j];
-				out[k + j] = u + t;
-				out[k + j + m_vecOperationPairsNum[s]] = u - t;
-				w = w * conj(m_vecWm[s]);
+				int index1 = j + pairsNumAddK;
+				int index2 = k + j;
+				//complexf vv = out[j + pairsNumAddK];
+				complexf vv(out[index1].real(), out[index1].imag());
+				//complexf t = w * vv;
+				complexf t((w.real()*vv.real() - w.imag()*vv.imag()), (w.real()*vv.imag() + w.imag()*vv.real()));
+				//complexf u = out[k + j];
+				complexf u(out[index2].real(), out[index2].imag());
+				//out[k + j] = out[k + j] + t;
+				out[index2].real(out[index2].real() + t.real());
+				out[index2].imag(out[index2].imag() + t.imag());
+				//out[j + pairsNumAddK] = u - t;
+				out[index1].real(u.real() - t.real());
+				out[index1].imag(u.imag() - t.imag());
+				//w *= cmf;
+				float new_r = w.real() * cmf.real() + w.imag() * cmf.imag();
+				float new_i = w.imag() * cmf.real() - w.real() * cmf.imag();
+				w.real(new_r);
+				w.imag(new_i);
 			}
 		}
 	}
-
 	for (int i = 0; i < m_nLen; ++i)
 	{
 		out[i] /= m_nLen;
