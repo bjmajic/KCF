@@ -68,18 +68,12 @@ void CFFT::fft1D(vector<complexf>& in, vector<complexf>& out)
 	if (inLen != m_nLen)
 	{
 		in.resize(m_nLen); //会自动赋值
-		/*for (size_t i = inLen; i < m_nLen; i++)
-		{
-			in.push_back(complexf(0));
-		}*/
 	}
 	out.resize(m_nLen);
 
 	bit_reverse_copy(in, out);
 	for (int s = 0; s < m_nstage; s++)
 	{
-		
-		//int pm_vecOperationPairsNum = m_vecOperationPairsNum[s];
 		int distance = m_vecDistance[s];
 		int pairsNum = m_vecOperationPairsNum[s];
 		//complexf cmf = m_vecWm[s];
@@ -96,22 +90,27 @@ void CFFT::fft1D(vector<complexf>& in, vector<complexf>& out)
 				int index1 = j + pairsNumAddK;
 				int index2 = k + j;
 				//complexf vv = out[j + pairsNumAddK];
-				complexf vv(out[index1].real(), out[index1].imag());
+				//complexf vv(out[index1].real(), out[index1].imag());
+				float vv[2] = { out[index1].real(), out[index1].imag() };
 				//complexf t = w * vv;
-				complexf t((w.real()*vv.real() - w.imag()*vv.imag()), (w.real()*vv.imag() + w.imag()*vv.real()));
+				//complexf t((w[0]*vv.real() - w[1]*vv.imag()), (w[0]*vv.imag() + w[1]*vv.real()));
+				float t[2] = { w[0] * vv[0] - w[1] * vv[1], w[0] * vv[1] + w[1] * vv[0] };
 				//complexf u = out[k + j];
-				complexf u(out[index2].real(), out[index2].imag());
+				//complexf u(out[index2].real(), out[index2].imag());
+				float out_index2_r = out[index2].real();
+				float out_index2_i = out[index2].imag();
+				float u[2] = { out_index2_r, out_index2_i };
 				//out[k + j] = out[k + j] + t;
-				out[index2].real(out[index2].real() + t.real());
-				out[index2].imag(out[index2].imag() + t.imag());
+				out[index2].real(out_index2_r + t[0]);
+				out[index2].imag(out_index2_i + t[1]);
 				//out[j + pairsNumAddK] = u - t;
-				out[index1].real(u.real() - t.real());
-				out[index1].imag(u.imag() - t.imag());
+				out[index1].real(u[0] - t[0]);
+				out[index1].imag(u[1] - t[1]);
 				//w *= cmf;
-				float new_r = w.real() * cmf.real() - w.imag() * cmf.imag();
-				float new_i = w.real() * cmf.imag() + w.imag() * cmf.real();
-				w.real(new_r);
-				w.imag(new_i);
+				float new_r = w[0] * cmf[0] - w[1] * cmf[1];
+				float new_i = w[0] * cmf[1] + w[1] * cmf[0];
+				w[0] = new_r;
+				w[1] = new_i;
 			}
 		}
 	}
@@ -144,6 +143,50 @@ void CFFT::ifft1D(vector<complexf>& in, vector<complexf>& out)
 	//	}
 	//}
 
+	//int inLen = in.size();
+	//if (inLen != m_nLen)
+	//{
+	//	in.resize(m_nLen); //会自动赋值
+	//}
+	//out.resize(m_nLen);
+
+	//bit_reverse_copy(in, out);
+	//for (int s = 0; s < m_nstage; s++)
+	//{
+
+	//	//int pm_vecOperationPairsNum = m_vecOperationPairsNum[s];
+	//	int distance = m_vecDistance[s];
+	//	int pairsNum = m_vecOperationPairsNum[s];
+	//	complexf cmf = m_vecWm[s];
+
+	//	for (int k = 0; k < m_nLen; k += distance)
+	//	{
+	//		int pairsNumAddK = k + pairsNum;
+	//		complexf w(1, 0);
+	//		for (int j = 0; j < pairsNum; ++j) //当前阶段可以组成多少对蝶形运算
+	//		{
+	//			int index1 = j + pairsNumAddK;
+	//			int index2 = k + j;
+	//			//complexf vv = out[j + pairsNumAddK];
+	//			complexf vv(out[index1].real(), out[index1].imag());
+	//			//complexf t = w * vv;
+	//			complexf t((w.real()*vv.real() - w.imag()*vv.imag()), (w.real()*vv.imag() + w.imag()*vv.real()));
+	//			//complexf u = out[k + j];
+	//			complexf u(out[index2].real(), out[index2].imag());
+	//			//out[k + j] = out[k + j] + t;
+	//			out[index2].real(out[index2].real() + t.real());
+	//			out[index2].imag(out[index2].imag() + t.imag());
+	//			//out[j + pairsNumAddK] = u - t;
+	//			out[index1].real(u.real() - t.real());
+	//			out[index1].imag(u.imag() - t.imag());
+	//			//w *= cmf;
+	//			float new_r = w.real() * cmf.real() + w.imag() * cmf.imag();
+	//			float new_i = w.imag() * cmf.real() - w.real() * cmf.imag();
+	//			w.real(new_r);
+	//			w.imag(new_i);
+	//		}
+	//	}
+	//}
 	int inLen = in.size();
 	if (inLen != m_nLen)
 	{
@@ -158,33 +201,43 @@ void CFFT::ifft1D(vector<complexf>& in, vector<complexf>& out)
 		//int pm_vecOperationPairsNum = m_vecOperationPairsNum[s];
 		int distance = m_vecDistance[s];
 		int pairsNum = m_vecOperationPairsNum[s];
-		complexf cmf = m_vecWm[s];
+		//complexf cmf = m_vecWm[s];
+		float cmf[2] = { m_vecWm[s * 2], m_vecWm[s * 2 + 1] };
 
 		for (int k = 0; k < m_nLen; k += distance)
 		{
 			int pairsNumAddK = k + pairsNum;
-			complexf w(1, 0);
+			//complexf w(1, 0);
+			float w[2] = { 1, 0 };
+			float w_r = 1.0f;
+			float w_i = 0.0f;
+
 			for (int j = 0; j < pairsNum; ++j) //当前阶段可以组成多少对蝶形运算
 			{
 				int index1 = j + pairsNumAddK;
 				int index2 = k + j;
 				//complexf vv = out[j + pairsNumAddK];
-				complexf vv(out[index1].real(), out[index1].imag());
+				//complexf vv(out[index1].real(), out[index1].imag());
+				float vv[2] = { out[index1].real(), out[index1].imag() };
 				//complexf t = w * vv;
-				complexf t((w.real()*vv.real() - w.imag()*vv.imag()), (w.real()*vv.imag() + w.imag()*vv.real()));
+				//complexf t((w[0]*vv.real() - w[1]*vv.imag()), (w[0]*vv.imag() + w[1]*vv.real()));
+				float t[2] = { w[0] * vv[0] - w[1] * vv[1], w[0] * vv[1] + w[1] * vv[0] };
 				//complexf u = out[k + j];
-				complexf u(out[index2].real(), out[index2].imag());
+				//complexf u(out[index2].real(), out[index2].imag());
+				float out_index2_r = out[index2].real();
+				float out_index2_i = out[index2].imag();
+				float u[2] = { out_index2_r, out_index2_i };
 				//out[k + j] = out[k + j] + t;
-				out[index2].real(out[index2].real() + t.real());
-				out[index2].imag(out[index2].imag() + t.imag());
+				out[index2].real(out_index2_r + t[0]);
+				out[index2].imag(out_index2_i + t[1]);
 				//out[j + pairsNumAddK] = u - t;
-				out[index1].real(u.real() - t.real());
-				out[index1].imag(u.imag() - t.imag());
+				out[index1].real(u[0] - t[0]);
+				out[index1].imag(u[1] - t[1]);
 				//w *= cmf;
-				float new_r = w.real() * cmf.real() + w.imag() * cmf.imag();
-				float new_i = w.imag() * cmf.real() - w.real() * cmf.imag();
-				w.real(new_r);
-				w.imag(new_i);
+				float new_r = w[0] * cmf[0] + w[1] * cmf[1];
+				float new_i = w[1] * cmf[0] - w[0] * cmf[1];
+				w[0] = new_r;
+				w[1] = new_i;
 			}
 		}
 	}
