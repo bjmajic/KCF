@@ -160,15 +160,15 @@ void CFFT::fft1D(vector<float>& in_real, vector<float>& in_imag, vector<float>& 
 				//float out_index2_r = out[index2].real();
 				//float out_index2_i = out[index2].imag();
 				//float u[2] = { out_index2_r, out_index2_i };
-				float out_index2_r = out_real[index2];
-				float out_index2_i = out_imag[index2];
-				float u_0 = out_index2_r;
-				float u_1 = out_index2_i;
+				float u_0 = out_real[index2];
+				float u_1 = out_imag[index2];
+				//float u_0 = out_index2_r;
+				//float u_1 = out_index2_i;
 				
 				//out[index2].real(out_index2_r + t[0]);
 				//out[index2].imag(out_index2_i + t[1]);
-				out_real[index2] = (out_index2_r + t_0);
-				out_imag[index2] = (out_index2_i + t_1);
+				out_real[index2] = (u_0 + t_0);
+				out_imag[index2] = (u_1 + t_1);
 				
 				//out[index1].real(u[0] - t[0]);
 				//out[index1].imag(u[1] - t[1]);
@@ -291,15 +291,15 @@ void CFFT::ifft1D(vector<float>& in_real, vector<float>& in_imag, vector<float>&
 				//float out_index2_r = out[index2].real();
 				//float out_index2_i = out[index2].imag();
 				//float u[2] = { out_index2_r, out_index2_i };
-				float out_index2_r = out_real[index2];
-				float out_index2_i = out_imag[index2];
-				float u_0 = out_index2_r;
-				float u_1 = out_index2_i;
+				float u_0 = out_real[index2];
+				float u_1 = out_imag[index2];
+				//float u_0 = out_index2_r;
+				//float u_1 = out_index2_i;
 
 				//out[index2].real(out_index2_r + t[0]);
 				//out[index2].imag(out_index2_i + t[1]);
-				out_real[index2] = (out_index2_r + t_0);
-				out_imag[index2] = (out_index2_i + t_1);
+				out_real[index2] = (u_0 + t_0);
+				out_imag[index2] = (u_1 + t_1);
 
 				//out[index1].real(u[0] - t[0]);
 				//out[index1].imag(u[1] - t[1]);
