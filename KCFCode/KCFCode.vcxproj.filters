@@ -177,6 +177,9 @@
     <ClCompile Include="..\include\Jpglib\jutils.c">
       <Filter>JpgLib</Filter>
     </ClCompile>
+    <ClCompile Include="TrackerManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FftTool.h">
@@ -229,6 +232,9 @@
     </ClInclude>
     <ClInclude Include="..\include\Jpglib\jversion.h">
       <Filter>JpgLib</Filter>
+    </ClInclude>
+    <ClInclude Include="TrackerManager.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

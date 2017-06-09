@@ -9,8 +9,8 @@ namespace SK
 		KCFTracker(bool hog = false, bool fixed_window = true, bool multiscale = false);
 		~KCFTracker();
 
-		virtual void Init(skRect& roi, skMat image) override;
-		virtual skRect update(skMat image) override;
+		virtual void Init(skRect& roi, skMat image);
+		virtual skRect update(skMat image, float& peakValue);
 
 		float interp_factor;
 		float sigma;                 // gaussian kernel bandwidth

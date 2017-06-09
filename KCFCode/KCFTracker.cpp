@@ -56,7 +56,7 @@ namespace SK
 		train(_tmpl, 1.0); // train with initial frame
 	}
 
-	skRect KCFTracker::update(skMat image)
+	skRect KCFTracker::update(skMat image, float& peakValue)
 	{
 		if (m_roi.x + m_roi.width <= 0) m_roi.x = -m_roi.width + 1;
 		if (m_roi.y + m_roi.height <= 0) m_roi.y = -m_roi.height + 1;
@@ -66,8 +66,9 @@ namespace SK
 		float cx = m_roi.x + m_roi.width / 2.0f;
 		float cy = m_roi.y + m_roi.height / 2.0f;
 
-		float peak_value;
-		skPoint2f res = detect(_tmpl, getFeatures(image, 0, 1.0f), peak_value);
+		//float peak_value;
+		skPoint2f res = detect(_tmpl, getFeatures(image, 0, 1.0f), peakValue);
+		//cout << "peak_value =" << peak_value << endl;
 
 		if (scale_step != 1)
 		{
@@ -129,8 +130,8 @@ namespace SK
 			else
 			{
 				// 确保像素是偶数
-				_tmpl_sz.nWidth = (_tmpl_sz.nWidth / 2) * 2;
-				_tmpl_sz.nHeight = (_tmpl_sz.nHeight / 2) * 2;
+				//_tmpl_sz.nWidth = (_tmpl_sz.nWidth / 2) * 2;
+				//_tmpl_sz.nHeight = (_tmpl_sz.nHeight / 2) * 2;
 
 				_tmpl_sz.nWidth = 256;
 				_tmpl_sz.nHeight = 256;

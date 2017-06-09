@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdio>
+#include "TrackerManager.h"
 
 using namespace std;
 //using namespace cv;
@@ -36,10 +37,10 @@ string GetImagePath(int num)
 
 void main()
 {
-	SK::KCFTracker tracker2(HOG, FIXEDWINDOW, MULTISCALE);
-	cv::Mat  framecv2;
-	bool bFirstFrame = true;
-	bool stop = false;
+	TrackerManager tm;
+	cv::Mat  tmpMat;
+	bool bFirst = true;
+	bool stop1 = false;
 	cv::VideoCapture capture("D:/KCF/1.mp4");//要读取的视频文
 	if (!capture.isOpened())
 	{
@@ -47,36 +48,96 @@ void main()
 		return;
 	}
 	double rate = capture.get(CV_CAP_PROP_FPS);
-	
+
 	int delay = 1000 / rate;
-	while (!stop)
+	while (!stop1)
 	{
-		if (!capture.read(framecv2))
+		if (!capture.read(tmpMat))
 		{
 			break;
 		}
-		cv::Mat grayMat;
-		cv::cvtColor(framecv2, grayMat, cv::COLOR_BGR2GRAY);
-		skMat frame2(grayMat.rows, grayMat.cols);
-		cv::cv2eigen(grayMat, frame2);
-		if (bFirstFrame)
+		//cv::Mat grayMat;
+		//cv::cvtColor(tmpMat, grayMat, cv::COLOR_BGR2GRAY);
+
+		//Eigen::Map<skMat> frame2(grayMat.ptr<uchar>(), grayMat.rows, grayMat.cols);
+		if (bFirst)
 		{
-			tracker2.Init(SK::skRect(290, 184, 140, 130), frame2);
+			tm.Init(tmpMat.data, tmpMat.cols, tmpMat.rows, 5);
+			//tracker2.Init(SK::skRect(290, 184, 140, 130), frame2);
 			//cv::imwrite("D:\\KCF\\1.jpg", framecv2);
-			bFirstFrame = false;
+			bFirst = false;
+
+			tm.CreateTracker(290, 184, 140, 130);
+			tm.CreateTracker(188,84,54,56);
+			tm.CreateTracker(506,56,66,66);
 		}
 
-		SK::skRect result2 = tracker2.update(frame2);
-		cv::Point P1, P2;
-		P1.x = result2.x;
-		P1.y = result2.y;
-		P2.x = result2.x + result2.width;
-		P2.y = result2.y + result2.height;
-		cv::rectangle(framecv2, P1, P2, cv::Scalar(128, 0, 128, 0.3), 2);
-		cv::imshow("Result", framecv2);
+		int* pRect;
+		float  fValue;
+		int n;
+		//SK::skRect result2 = tracker2.update(frame2, ret);
+		pRect = tm.UpdateTracker(tmpMat, n);
+		for (int i = 0; i < n; i++)
+		{
+			cv::Point P1, P2;
+			P1.x = pRect[i * 4 + 0];
+			P1.y = pRect[i * 4 + 1];
+			P2.x = P1.x + pRect[i * 4 + 2];
+			P2.y = P1.y + pRect[i * 4 + 3];
+			cv::rectangle(tmpMat, P1, P2, cv::Scalar(128, 0, 128, 0.3), 2);
+		}
+		//cout << ret << endl;
+	
+		cv::imshow("Result", tmpMat);
 		cv::waitKey(1);
 	}
+
 	return;
+
+	//SK::KCFTracker tracker2(HOG, FIXEDWINDOW, MULTISCALE);
+	//cv::Mat  framecv2;
+	//bool bFirstFrame = true;
+	//bool stop = false;
+	//cv::VideoCapture capture2("D:/KCF/1.mp4");//要读取的视频文
+	//if (!capture.isOpened())
+	//{
+	//	cout << "con not open video 1.mp4" << endl;
+	//	return;
+	//}
+	//double rate2 = capture.get(CV_CAP_PROP_FPS);
+	//
+	//int delay2 = 1000 / rate2;
+	//while (!stop)
+	//{
+	//	if (!capture.read(framecv2))
+	//	{
+	//		break;
+	//	}
+	//	cv::Mat grayMat;
+	//	cv::cvtColor(framecv2, grayMat, cv::COLOR_BGR2GRAY);
+	//	
+	//	Eigen::Map<skMat> frame2(grayMat.ptr<uchar>(), grayMat.rows, grayMat.cols);
+	//	if (bFirstFrame)
+	//	{
+	//		tracker2.Init(SK::skRect(290, 184, 140, 130), frame2);
+	//		//cv::imwrite("D:\\KCF\\1.jpg", framecv2);
+	//		bFirstFrame = false;
+	//	}
+
+	//	float ret;
+	//	SK::skRect result2 = tracker2.update(frame2, ret);
+	//	//cout << ret << endl;
+	//	cv::Point P1, P2;
+	//	P1.x = result2.x;
+	//	P1.y = result2.y;
+	//	P2.x = result2.x + result2.width;
+	//	P2.y = result2.y + result2.height;
+	//	cv::rectangle(framecv2, P1, P2, cv::Scalar(128, 0, 128, 0.3), 2);
+	//	cv::imshow("Result", framecv2);
+	//	cv::waitKey(1);
+	//}
+	//return;
+
 	// just for single image
 	SK::KCFTracker tracker(HOG, FIXEDWINDOW, MULTISCALE);
 	cv::Mat  framecv;
@@ -119,7 +180,8 @@ void main()
 			{
 				frame1.row(i).swap(frame1.row(frame1.rows() - 1 - i));
 			}
-			SK::skRect result = tracker.update(frame1);
+			float retvalue;
+			SK::skRect result = tracker.update(frame1, retvalue);
 			//cout << result.x << "---" << result.y << "---" << result.width << "---" <<
 				//result.height << endl;
 			framecv = cv::imread(filename);
