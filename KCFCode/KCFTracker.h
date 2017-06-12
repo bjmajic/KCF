@@ -22,8 +22,14 @@ namespace SK
 		int   cell_size;
 
 	protected:
-		Eigen::MatrixXcf _alphaf; //频域的值
-		Eigen::MatrixXcf _prob;  // 频域的值
+		//Eigen::MatrixXcf _alphaf; //频域的值
+		//Eigen::MatrixXcf _prob;  // 频域的值
+		Eigen::MatrixXf _alphaf_real; 
+		Eigen::MatrixXf _alphaf_imag;
+
+		Eigen::MatrixXf _prob_real;
+		Eigen::MatrixXf _prob_imag;
+
 		Eigen::MatrixXf _tmpl;
 		Eigen::MatrixXf _num;
 		Eigen::MatrixXf _den;
@@ -45,12 +51,19 @@ namespace SK
 
 		// Create Gaussian Peak. Function called only in the first frame. 
 		void createGaussianPeak(int sizey, int sizex, MatrixXcf& resMatrix);
+		void createGaussianPeak(int sizey, int sizex, MatrixXf& resMatrix_real, MatrixXf& resMatrix_imag);
 
 		void FFT2D(const MatrixXf& in, MatrixXcf& out);
 		void iFFT2D(const MatrixXcf& in, MatrixXf& out);
 
 		void FFT2D_F(const MatrixXf& in, MatrixXcf& out);
 		void iFFT2D_F(const MatrixXcf& in, MatrixXf& out);
+
+		void FFT2D_F(const MatrixXf& in, MatrixXf& out_real, MatrixXf& out_imag);
+		void iFFT2D_F(const MatrixXf& in_real, const MatrixXf& in_imag, MatrixXf& out);
+
+		void FFT2D_F2(MatrixXf& in, MatrixXf& out_real, MatrixXf& out_imag);
+		void iFFT2D_F2(MatrixXf& in_real, MatrixXf& in_imag, MatrixXf& out);
 		
 
 		//cv::Point2f detect(cv::Mat z, cv::Mat x, float &peak_value); // Detect object in the current frame. 
@@ -69,6 +82,9 @@ namespace SK
 		skSize<int> _tmpl_sz;
 		MatrixXf hann;
 		
+		float *tmp_in_row_imag;
+		float *tmp_out_real;
+		float *tmp_out_imag;
 	};
 
 }
