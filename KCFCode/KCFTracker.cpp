@@ -13,10 +13,6 @@ namespace SK
 		padding = 2.5f;
 		output_sigma_factor = 0.125f;
 
-		tmp_in_row_imag = nullptr;
-		tmp_out_real = nullptr;
-		tmp_out_imag = nullptr;
-
 		if (hog)
 		{
 		}
@@ -45,21 +41,7 @@ namespace SK
 
 	KCFTracker::~KCFTracker()
 	{
-		if (tmp_in_row_imag != nullptr)
-		{
-			delete[] tmp_in_row_imag;
-			tmp_in_row_imag = nullptr;
-		}
-		if (tmp_out_real != nullptr)
-		{
-			delete[] tmp_out_real;
-			tmp_out_real = nullptr;
-		}
-		if (tmp_out_imag != nullptr)
-		{
-			delete[] tmp_out_imag;
-			tmp_out_imag = nullptr;
-		}
+		
 	}
 
 	void KCFTracker::Init(skRect& roi, skMat image)
@@ -73,24 +55,16 @@ namespace SK
 
 		fft_row = CFFT(_tmpl.cols());
 		fft_col = CFFT(_tmpl.rows());
-
-		tmp_in_row_imag = new float[_tmpl.cols()];  // 输入图像每一行的虚部
-		memset(tmp_in_row_imag, 0, _tmpl.cols()*sizeof(float));
 		
-		tmp_out_real = new float[_tmpl.rows() * _tmpl.cols()];
-		memset(tmp_out_real, 0, _tmpl.rows() * _tmpl.cols() * sizeof(float));
-
-		tmp_out_imag = new float[_tmpl.rows() * _tmpl.cols()];
-		memset(tmp_out_imag, 0, _tmpl.rows() * _tmpl.cols() * sizeof(float));
 
 		/*createGaussianPeak(size_patch[0], size_patch[1], _prob);
 		_alphaf = MatrixXcf(size_patch[0], size_patch[1]);
 		_alphaf.fill(complexf(0));*/
 
 		createGaussianPeak(size_patch[0], size_patch[1], _prob_real, _prob_imag);
-		_alphaf_real = MatrixXf(size_patch[0], size_patch[1]);
+		_alphaf_real = skMatrix(size_patch[0], size_patch[1]);
 		_alphaf_real.fill(0);
-		_alphaf_imag = MatrixXf(size_patch[0], size_patch[1]);
+		_alphaf_imag = skMatrix(size_patch[0], size_patch[1]);
 		_alphaf_imag.fill(0);
 
 		train(_tmpl, 1.0); // train with initial frame
@@ -124,7 +98,7 @@ namespace SK
 		if (m_roi.y + m_roi.height <= 0) m_roi.y = -m_roi.height + 2;
 
 		assert(m_roi.width >= 0 && m_roi.height >= 0);
-		MatrixXf x = getFeatures(image, 0);
+		skMatrix x = getFeatures(image, 0);
 		train(x, interp_factor);
 
 		skRect roi;
@@ -133,7 +107,7 @@ namespace SK
 		//return Rect(1, 2, 3, 4);
 	}
 
-	Eigen::MatrixXf KCFTracker::getFeatures(const skMat& image, bool inithann, float scale_adjust /*= 1.0f*/)
+	skMatrix KCFTracker::getFeatures(const skMat& image, bool inithann, float scale_adjust /*= 1.0f*/)
 	{
 		skRect extracted_roi;
 
@@ -205,13 +179,13 @@ namespace SK
 		extracted_roi.x = cx - extracted_roi.width * 0.5;
 		extracted_roi.y = cy - extracted_roi.height * 0.5;  // 这样中心点没有移动
 
-		Eigen::MatrixXf FeaturesMap;
+		skMatrix FeaturesMap;
 		skMat z = SK::subwindow(image, extracted_roi);
 		if (z.cols() != _tmpl_sz.nWidth || z.rows() != _tmpl_sz.nHeight) {
 			SK::Resize(z, _tmpl_sz);
 		}
 
-		MatrixXf t = z.cast<float>();
+		skMatrix t = z.cast<float>();
 		//saveTxt("init_z.txt", t);
 
 		if (_hogfeatures)
@@ -238,9 +212,9 @@ namespace SK
 
 	void KCFTracker::CreateHanningMats()
 	{
-		MatrixXf hann1t(1, size_patch[1]); //（行， 列）
+		skMatrix hann1t(1, size_patch[1]); //（行， 列）
 		hann1t.fill(0);
-		MatrixXf hann2t(size_patch[0], 1); // (行， 列)
+		skMatrix hann2t(size_patch[0], 1); // (行， 列)
 		hann2t.fill(0);
 		for (int i = 0; i < hann1t.cols(); i++)
 		{
@@ -251,7 +225,7 @@ namespace SK
 			hann2t(i, 0) = 0.5f * (1 - std::cos(2 * 3.141593f * i / (hann2t.rows() - 1)));
 		}
 
-		MatrixXf hann2d = hann2t * hann1t;
+		skMatrix hann2d = hann2t * hann1t;
 		if (_hogfeatures)
 		{
 		}
@@ -272,26 +246,36 @@ namespace SK
 		return 0.5f * (right - left) / divisor;
 	}
 
-	Eigen::MatrixXf KCFTracker::gaussianCorrelation(MatrixXf x1, MatrixXf x2)
+	skMatrix KCFTracker::gaussianCorrelation(skMatrix x1, skMatrix x2)
 	{
 		//cv::Mat c = cv::Mat(cv::Size(size_patch[1], size_patch[0]), CV_32F, cv::Scalar(0));
-		MatrixXf c(size_patch[0], size_patch[1]);
+		skMatrix c(size_patch[0], size_patch[1]);
 		c.fill(0);
 		if (_hogfeatures)
 		{
 		}
 		else
 		{
-			MatrixXf x1_out_real;
-			MatrixXf x2_out_real;
+			skMatrix x1_out_real;
+			skMatrix x2_out_real;
 
-			MatrixXf x1_out_imag;
-			MatrixXf x2_out_imag;
+			skMatrix x1_out_imag;
+			skMatrix x2_out_imag;
 
 			//FFT2D(x1, x1_out);
 			//FFT2D(x2, x2_out);
-			FFT2D_F(x1, x1_out_real, x1_out_imag);
-			FFT2D_F(x2, x2_out_real, x2_out_imag);
+			FFT2D_F2(x1, x1_out_real, x1_out_imag);
+			FFT2D_F2(x2, x2_out_real, x2_out_imag);
+			/*if (&x1 == &x2)
+			{
+				x2_out_real = x1_out_real;
+				x2_out_imag = x1_out_imag;
+			}
+			else
+			{
+				FFT2D_F2(x2, x2_out_real, x2_out_imag);
+			}*/
+			
 
 			//saveTxt("gaussianCorrelation_x1_out.txt", x1_out);
 			//saveTxt("gaussianCorrelation_x2_out.txt", x2_out);
@@ -299,8 +283,9 @@ namespace SK
 
 			//iFFT2D(x1_out.cwiseProduct(x2_out.conjugate()), c);
 			//iFFT2D_F(x1_out.cwiseProduct(x2_out.conjugate()), c);
-			iFFT2D_F(x1_out_real.cwiseProduct(x2_out_real) + x1_out_imag.cwiseProduct(x2_out_imag),
-				     x1_out_imag.cwiseProduct(x2_out_real) - x1_out_real.cwiseProduct(x2_out_imag), c);
+			skMatrix real = x1_out_real.cwiseProduct(x2_out_real) + x1_out_imag.cwiseProduct(x2_out_imag);
+			skMatrix imag = x1_out_imag.cwiseProduct(x2_out_real) - x1_out_real.cwiseProduct(x2_out_imag);
+			iFFT2D_F2(real, imag, c);
 
 			//saveTxt("gaussianCorrelation_c.txt", c);
 
@@ -309,12 +294,12 @@ namespace SK
 
 		//saveTxt("gaussianCorrelation_c_.txt", c);
 
-		MatrixXf d;
+		skMatrix d;
 		d = x1.cwiseProduct(x1).sum() + x2.cwiseProduct(x2).sum() - (c * 2).array();
 		d = d / (size_patch[0] * size_patch[1] * size_patch[2]);
 		d = (d.array() > 0).select(d, 0);
 		
-		MatrixXf k;
+		skMatrix k;
 		//cv::exp((-d / (sigma * sigma)), k);
 		
 		k = (-d / (sigma * sigma)).array().exp();
@@ -323,7 +308,7 @@ namespace SK
 
 	void KCFTracker::createGaussianPeak(int sizey, int sizex, MatrixXcf& resMatrix)
 	{
-		MatrixXf res(sizey, sizex);
+		skMatrix res(sizey, sizex);
 
 		int syh = (sizey) / 2;
 		int sxh = (sizex) / 2;
@@ -343,9 +328,9 @@ namespace SK
 		FFT2D_F(res, resMatrix);
 	}
 
-	void KCFTracker::createGaussianPeak(int sizey, int sizex, MatrixXf& resMatrix_real, MatrixXf& resMatrix_imag)
+	void KCFTracker::createGaussianPeak(int sizey, int sizex, skMatrix& resMatrix_real, skMatrix& resMatrix_imag)
 	{
-		MatrixXf res(sizey, sizex);
+		skMatrix res(sizey, sizex);
 
 		int syh = (sizey) / 2;
 		int sxh = (sizex) / 2;
@@ -360,10 +345,10 @@ namespace SK
 				int jh = j - sxh;
 				res(i, j) = std::exp(mult * (float)(ih * ih + jh * jh));
 			}
-		FFT2D_F(res, resMatrix_real, resMatrix_imag);
+		FFT2D_F2(res, resMatrix_real, resMatrix_imag);
 	}
 
-	void KCFTracker::FFT2D(const MatrixXf& in, MatrixXcf& out)
+	void KCFTracker::FFT2D(const skMatrix& in, MatrixXcf& out)
 	{
 		out.resize(in.rows(), in.cols());
 
@@ -400,7 +385,7 @@ namespace SK
 		}
 	}
 
-	void KCFTracker::iFFT2D(const MatrixXcf& in, MatrixXf& out)
+	void KCFTracker::iFFT2D(const MatrixXcf& in, skMatrix& out)
 	{
 		out.resize(in.rows(), in.cols());
 		MatrixXcf outTmp(in.rows(), in.cols());
@@ -438,7 +423,7 @@ namespace SK
 		}
 	}
 
-	void KCFTracker::FFT2D_F(const MatrixXf& in, MatrixXcf& out)
+	void KCFTracker::FFT2D_F(const skMatrix& in, MatrixXcf& out)
 	{
 		out.resize(in.rows(), in.cols());
 		vector< vector<float> > outTmp_r(in.rows(), vector<float>(in.cols()));
@@ -494,7 +479,7 @@ namespace SK
 		}
 	}
 
-	void KCFTracker::FFT2D_F(const MatrixXf& in, MatrixXf& out_real, MatrixXf& out_imag)
+	void KCFTracker::FFT2D_F(const skMatrix& in, skMatrix& out_real, skMatrix& out_imag)
 	{		
 		int rowSize = in.rows();
 		int colSize = in.cols();
@@ -554,7 +539,7 @@ namespace SK
 		}
 	}
 
-	void KCFTracker::iFFT2D_F(const MatrixXcf& in, MatrixXf& out)
+	void KCFTracker::iFFT2D_F(const MatrixXcf& in, skMatrix& out)
 	{
 		out.resize(in.rows(), in.cols());
 		//MatrixXcf outTmp(in.rows(), in.cols());
@@ -610,7 +595,7 @@ namespace SK
 		}
 	}
 
-	void KCFTracker::iFFT2D_F(const MatrixXf& in_real, const MatrixXf& in_imag, MatrixXf& out)
+	void KCFTracker::iFFT2D_F(const skMatrix& in_real, const skMatrix& in_imag, skMatrix& out)
 	{
 		eigen_assert(in_real.rows() == in_imag.rows() && in_real.cols() == in_imag.cols());
 		out.resize(in_real.rows(), in_real.cols());
@@ -669,54 +654,102 @@ namespace SK
 		}
 	}
 
-	void KCFTracker::FFT2D_F2(MatrixXf& in, MatrixXf& out_real, MatrixXf& out_imag)
+	void KCFTracker::FFT2D_F2(skMatrix& in, skMatrix& out_real, skMatrix& out_imag)
 	{
+		// 临时保留输入
+		skMatrix saved_in = in;
+
 		int rowSize = in.rows();
 		int colSize = in.cols();
 
 		out_real.resize(rowSize, colSize);
 		out_imag.resize(rowSize, colSize);
 
-		MatrixXf tmp_in_row_imag(1, colSize);
-		tmp_in_row_imag.fill(0.0f);
-
-		//vector<float> in_row_real(colSize);
-		//vector<float> in_row_imag(colSize);
-		//vector<float> out_row_real(colSize);
-		//vector<float> out_row_imag(colSize);
-
+		skMatrix tmp_in_imag(rowSize, colSize);
+		tmp_in_imag.fill(0);
 		int bufOff = 0;
 
 		for (int i = 0; i < rowSize; i++)
 		{
 			bufOff = i * colSize;
-			fft_row.fft1D(in.data() + bufOff, tmp_in_row_imag.data(), out_real.data() + bufOff, out_imag.data() + bufOff);
+			//fft_row.fft1D(in.data() + bufOff, tmp_in_imag.data()+bufOff, out_real.data() + bufOff, out_imag.data() + bufOff);
+			fft_row.fft_1d(in.data() + bufOff, tmp_in_imag.data() + bufOff, out_real.data() + bufOff, out_imag.data() + bufOff);
 		}
 
 		// 转置
-		out_real.transpose();
-		out_imag.transpose();
-		int rowNum = out_real.rows();
-		int colNum = out_real.cols();
+		out_real.transposeInPlace();
+		out_imag.transposeInPlace();
+		in = out_real;
+		tmp_in_imag = out_imag;
+
+		int rowNum = in.rows();
+		int colNum = in.cols();
 
 		for (int i = 0; i < rowNum; i++)
 		{
 			//每一列进行一维fft
-			bufOff = i * colSize;
-			fft_col.fft1D(in.data() + bufOff, tmp_in_row_imag.data(), out_real.data() + bufOff, out_imag.data() + bufOff);			
+			bufOff = i * colNum;
+			//fft_col.fft1D(in.data() + bufOff, tmp_in_imag.data()+bufOff, out_real.data() + bufOff, out_imag.data() + bufOff);
+			fft_col.fft_1d(in.data() + bufOff, tmp_in_imag.data() + bufOff, out_real.data() + bufOff, out_imag.data() + bufOff);
 		}
+
+		//转置回来
+		out_real.transposeInPlace();
+		out_imag.transposeInPlace();
+
+		in = saved_in;
 	}
 
-	void KCFTracker::train(MatrixXf x, float train_interp_factor)
+	void KCFTracker::iFFT2D_F2(skMatrix& in_real, skMatrix& in_imag, skMatrix& out)
 	{
-		MatrixXf k = gaussianCorrelation(x, x);
+		eigen_assert(in_real.rows() == in_imag.rows() && in_real.cols() == in_imag.cols());
+
+		int rowSize = in_real.rows();
+		int colSize = in_real.cols();
+		out.resize(rowSize, colSize);
+		skMatrix tmp_out_imag(rowSize, colSize);
+		tmp_out_imag.fill(0);
+
+		int bufOff = 0;
+		for (int i = 0; i < rowSize; i++)
+		{
+			//每一行进行一维fft
+			bufOff = i * colSize;
+			//fft_row.ifft1D(in_real.data() + bufOff, in_imag.data() + bufOff, out.data() + bufOff, tmp_out_imag.data()+bufOff);
+			fft_row.ifft_1d(in_real.data() + bufOff, in_imag.data() + bufOff, out.data() + bufOff, tmp_out_imag.data() + bufOff);
+		}
+
+		//转置
+		out.transposeInPlace();
+		tmp_out_imag.transposeInPlace();
+		in_real = out;
+		in_imag = tmp_out_imag;
+
+		int rowNum = in_real.rows();
+		int colNum = in_real.cols();
+		for (int i = 0; i < rowNum; i++)
+		{
+			//每一列进行一维fft
+			bufOff = i * colNum;
+			//fft_col.ifft1D(in_real.data() + bufOff, in_imag.data() + bufOff, out.data() + bufOff, tmp_out_imag.data()+bufOff);
+			fft_col.ifft_1d(in_real.data() + bufOff, in_imag.data() + bufOff, out.data() + bufOff, tmp_out_imag.data() + bufOff);
+		}
+
+		//转置回来
+		out.transposeInPlace();
+		//out_imag.transposeInPlace();
+	}
+
+	void KCFTracker::train(skMatrix x, float train_interp_factor)
+	{
+		skMatrix k = gaussianCorrelation(x, x);
 
 		//saveTxt("train_k.txt", k);
 
-		MatrixXf  k_fft_real;
-		MatrixXf  k_fft_imag;
+		skMatrix  k_fft_real;
+		skMatrix  k_fft_imag;
 
-		FFT2D_F(k, k_fft_real, k_fft_imag);
+		FFT2D_F2(k, k_fft_real, k_fft_imag);
 
 		//saveTxt("train_kfft.txt", k_fft);
 
@@ -726,10 +759,10 @@ namespace SK
 		k_fft_imag.array() += lambda;
 		k_fft_real.array() += lambda;
 
-		MatrixXf tmp = k_fft_real.array().square() + k_fft_imag.array().square();
+		skMatrix tmp = k_fft_real.array().square() + k_fft_imag.array().square();
 
-		MatrixXf alphaf_real = (_prob_real.cwiseProduct(k_fft_real) + _prob_imag.cwiseProduct(k_fft_imag)).array()/tmp.array();
-		MatrixXf alphaf_imag = (_prob_imag.cwiseProduct(k_fft_real) - _prob_real.cwiseProduct(k_fft_imag)).array()/tmp.array();
+		skMatrix alphaf_real = (_prob_real.cwiseProduct(k_fft_real) + _prob_imag.cwiseProduct(k_fft_imag)).array() / tmp.array();
+		skMatrix alphaf_imag = (_prob_imag.cwiseProduct(k_fft_real) - _prob_real.cwiseProduct(k_fft_imag)).array() / tmp.array();
 
 		_tmpl = (1 - train_interp_factor) * _tmpl + (train_interp_factor)* x;
 		//_alphaf = (1 - train_interp_factor) * _alphaf + (train_interp_factor)* alphaf;
@@ -737,20 +770,21 @@ namespace SK
 		_alphaf_imag = (1 - train_interp_factor) * _alphaf_imag + (train_interp_factor)* alphaf_imag;
 	}
 
-	SK::skPoint2f KCFTracker::detect(MatrixXf z, MatrixXf x, float &peak_value)
+	SK::skPoint2f KCFTracker::detect(skMatrix z, skMatrix x, float &peak_value)
 	{
-		MatrixXf k = gaussianCorrelation(x, z);
+		skMatrix k = gaussianCorrelation(x, z);
 		
-		MatrixXf k_fft_real;
-		MatrixXf k_fft_imag;
+		skMatrix k_fft_real;
+		skMatrix k_fft_imag;
 		
-		FFT2D_F(k, k_fft_real, k_fft_imag);
+		FFT2D_F2(k, k_fft_real, k_fft_imag);
 
-		MatrixXf res;
+		skMatrix res;
 		//iFFT2D(_alphaf.cwiseProduct(k_fft), res);
 		//iFFT2D_F(_alphaf.cwiseProduct(k_fft), res);
-		iFFT2D_F(_alphaf_real.cwiseProduct(k_fft_real) - _alphaf_imag.cwiseProduct(k_fft_imag), 
-			     _alphaf_imag.cwiseProduct(k_fft_real) + _alphaf_real.cwiseProduct(k_fft_imag) ,res);
+		skMatrix real = _alphaf_real.cwiseProduct(k_fft_real) - _alphaf_imag.cwiseProduct(k_fft_imag);
+		skMatrix imag = _alphaf_imag.cwiseProduct(k_fft_real) + _alphaf_real.cwiseProduct(k_fft_imag);
+		iFFT2D_F2(real, imag, res);
 
 		//saveTxt("detect_res.txt", res);
 
