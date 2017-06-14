@@ -27,9 +27,11 @@ void TrackerManager::Init(unsigned char* pImage, int width, int height, int num,
 	m_bFixedWindow = bFixedWindow;
 	m_bMultiscale = bMultiscale;
 
-	m_frame.resize(height, width);
-	BGR2GRAY(pImage, width, height, m_frame.data());
+	m_frame.resize(height*0.25, width*0.25);
+	skMat grayMat(height, width);
+	BGR2GRAY(pImage, width, height, grayMat.data());
 
+	Zoom(grayMat.data(), width, height, m_frame.data(), width*0.25, height*0.25);
 	m_maxTracerNum = num;
 
 	m_resRect = new int[4 * m_maxTracerNum];
@@ -45,7 +47,7 @@ int TrackerManager::CreateTracker(int x, int y, int w, int h)
 	KCFTracker* tracker =  new KCFTracker(m_bHog, m_bFixedWindow, m_bMultiscale);
 	if (tracker != nullptr)
 	{
-		tracker->Init(SK::skRect(x, y, w, h), m_frame);
+		tracker->Init(SK::skRect(x*0.25, y*0.25, w*0.25, h*0.25), m_frame);
 		m_vecTrackerPtr.push_back(tracker);
 		return 1; // ³É¹¦
 	}
@@ -54,16 +56,19 @@ int TrackerManager::CreateTracker(int x, int y, int w, int h)
 
 int* TrackerManager::UpdateTracker(unsigned char* pImage, int width, int height, int& trackerNum)
 {
-	BGR2GRAY(pImage, width, height, m_frame.data());
+	skMat grayMat(height, width);
+	BGR2GRAY(pImage, width, height, grayMat.data());
+
+	Zoom(grayMat.data(), width, height, m_frame.data(), width*0.25, height*0.25);
 	float pValue = 0.0f;
 	skRect resRect;
 	for (size_t i = 0; i < m_vecTrackerPtr.size(); ++i)
 	{
 		resRect = m_vecTrackerPtr[i]->update(m_frame, pValue);
-		m_resRect[i * 4] = resRect.x;
-		m_resRect[i * 4 + 1] = resRect.y;
-		m_resRect[i * 4 + 2] = resRect.width;
-		m_resRect[i * 4 + 3] = resRect.height;
+		m_resRect[i * 4] = resRect.x/0.25;
+		m_resRect[i * 4 + 1] = resRect.y/0.25;
+		m_resRect[i * 4 + 2] = resRect.width/0.25;
+		m_resRect[i * 4 + 3] = resRect.height/0.25;
 	}
 	trackerNum = m_vecTrackerPtr.size();
 	return m_resRect;
@@ -73,6 +78,7 @@ int* TrackerManager::UpdateTracker(cv::Mat& mat, int& trackerNum)
 {
 	cv::Mat grayMat;
 	cv::cvtColor(mat, grayMat, cv::COLOR_BGR2GRAY);
+	cv::resize(grayMat, grayMat, cv::Size(), 0.25, 0.25);
 
 	m_frame = Eigen::Map<skMat>(grayMat.ptr<uchar>(), grayMat.rows, grayMat.cols);
 	float pValue = 0.0f;
@@ -80,10 +86,13 @@ int* TrackerManager::UpdateTracker(cv::Mat& mat, int& trackerNum)
 	for (size_t i = 0; i < m_vecTrackerPtr.size(); ++i)
 	{
 		resRect = m_vecTrackerPtr[i]->update(m_frame, pValue);
-		m_resRect[i * 4] = resRect.x;
-		m_resRect[i * 4 + 1] = resRect.y;
-		m_resRect[i * 4 + 2] = resRect.width;
-		m_resRect[i * 4 + 3] = resRect.height;
+		m_resRect[i * 4] = resRect.x/0.25;
+		m_resRect[i * 4 + 1] = resRect.y/0.25;
+		m_resRect[i * 4 + 2] = resRect.width/0.25;
+		m_resRect[i * 4 + 3] = resRect.height/0.25;
+
+		//just for test
+		//cout << "pValue = " << pValue << endl;
 	}
 	trackerNum = m_vecTrackerPtr.size();
 	return m_resRect;

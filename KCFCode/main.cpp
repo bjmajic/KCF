@@ -76,7 +76,8 @@ void main()
 		float  fValue;
 		int n;
 		//SK::skRect result2 = tracker2.update(frame2, ret);
-		pRect = tm.UpdateTracker(tmpMat, n);
+		//pRect = tm.UpdateTracker(tmpMat, n);
+		pRect = tm.UpdateTracker(tmpMat.data, tmpMat.cols, tmpMat.rows,  n);
 		for (int i = 0; i < n; i++)
 		{
 			cv::Point P1, P2;

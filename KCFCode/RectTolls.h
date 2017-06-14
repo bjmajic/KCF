@@ -6,71 +6,72 @@
 #include <fstream>
 using namespace Eigen;
 typedef Matrix<unsigned char, Dynamic, Dynamic, RowMajor> skMat;
+typedef Matrix<float, Dynamic, Dynamic, RowMajor> skMatrix;
 
 // just for debug, record the res to txt
 
-inline void saveTxt(string savedName, MatrixXf matdata)
-{
-	string basePath = "D:\\KCF\\";
-	basePath = basePath + savedName;
-
-	ofstream of1(basePath);
-	of1.setf(ios::fixed);
-	of1.precision(4);
-	int height = matdata.rows();
-	int width = matdata.cols();
-
-	for (int i = 0; i < height; i++)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			of1 << matdata(i, j) << "\t";
-		}
-		of1 << "\n";
-	}
-}
-
-inline void saveTxt(string savedName, MatrixXcf matdata)
-{
-	string basePath = "D:\\KCF\\";
-	basePath = basePath + savedName;
-
-	ofstream of1(basePath);
-	//of1.setf(ios::fixed);
-	//of1.precision(4);
-	int height = matdata.rows();
-	int width = matdata.cols();
-
-	for (int i = 0; i < height; i++)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			of1 << matdata(i, j) << "\t";
-		}
-		of1 << "\n";
-	}
-}
-
-inline void saveTxt(string savedName, skMat matdata)
-{
-	string basePath = "D:\\KCF\\";
-	basePath = basePath + savedName;
-
-	ofstream of1(basePath);
-	//of1.setf(ios::fixed);
-	//of1.precision(4);
-	int height = matdata.rows();
-	int width = matdata.cols();
-
-	for (int i = 0; i < height; i++)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			of1 << matdata(i, j) << "\t";
-		}
-		of1 << "\n";
-	}
-}
+//inline void saveTxt(string savedName, MatrixXf matdata)
+//{
+//	string basePath = "D:\\KCF\\";
+//	basePath = basePath + savedName;
+//
+//	ofstream of1(basePath);
+//	of1.setf(ios::fixed);
+//	of1.precision(4);
+//	int height = matdata.rows();
+//	int width = matdata.cols();
+//
+//	for (int i = 0; i < height; i++)
+//	{
+//		for (int j = 0; j < width; j++)
+//		{
+//			of1 << matdata(i, j) << "\t";
+//		}
+//		of1 << "\n";
+//	}
+//}
+//
+//inline void saveTxt(string savedName, MatrixXcf matdata)
+//{
+//	string basePath = "D:\\KCF\\";
+//	basePath = basePath + savedName;
+//
+//	ofstream of1(basePath);
+//	//of1.setf(ios::fixed);
+//	//of1.precision(4);
+//	int height = matdata.rows();
+//	int width = matdata.cols();
+//
+//	for (int i = 0; i < height; i++)
+//	{
+//		for (int j = 0; j < width; j++)
+//		{
+//			of1 << matdata(i, j) << "\t";
+//		}
+//		of1 << "\n";
+//	}
+//}
+//
+//inline void saveTxt(string savedName, skMat matdata)
+//{
+//	string basePath = "D:\\KCF\\";
+//	basePath = basePath + savedName;
+//
+//	ofstream of1(basePath);
+//	//of1.setf(ios::fixed);
+//	//of1.precision(4);
+//	int height = matdata.rows();
+//	int width = matdata.cols();
+//
+//	for (int i = 0; i < height; i++)
+//	{
+//		for (int j = 0; j < width; j++)
+//		{
+//			of1 << matdata(i, j) << "\t";
+//		}
+//		of1 << "\n";
+//	}
+//}
 
 namespace SK
 {
@@ -258,11 +259,11 @@ namespace SK
 		}
 		return res;
 	}
-	inline MatrixXf getGrayImage(const skMat& img)
+	inline skMatrix getGrayImage(const skMat& img)
 	{
-		MatrixXf resMatrix = img.cast<float>();
-		//resMatrix *= 0.003922f;
-		resMatrix /= 255;
+		skMatrix resMatrix = img.cast<float>();
+		resMatrix *= 0.003922f;
+		//resMatrix /= 255;
 		return resMatrix;
 	}
 
@@ -273,16 +274,11 @@ namespace SK
 		z = newZ;
 	}
 
-	inline void rearrange(MatrixXf &img)
+	inline void rearrange(skMatrix &img)
 	{
 		// img = img(cv::Rect(0, 0, img.cols & -2, img.rows & -2));
 		int cx = img.cols() / 2;
 		int cy = img.rows() / 2;
-
-		//MatrixXf q0 = img.block(0, 0, cy, cx);
-		//MatrixXf q1 = img.block(0, cx, cy, cx);
-		//MatrixXf q2 = img.block(cy, 0, cy, cx);
-		//MatrixXf q3 = img.block(cy, cx, cy, cx);
 
 		img.block(0, 0, cy, cx).swap(img.block(cy, cx, cy, cx));
 		img.block(0, cx, cy, cx).swap(img.block(cy, 0, cy, cx));

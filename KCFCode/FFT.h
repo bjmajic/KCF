@@ -21,6 +21,15 @@ public:
 	void fft1D(vector<float>& in_real, vector<float>& in_imag, vector<float>& out_real, vector<float>& out_imag);
 	void ifft1D(vector<float>& in_real, vector<float>& in_imag, vector<float>& out_real, vector<float>& out_imag);
 
+	//void fft1D(vector<float>& in, vector<float>& out_real, vector<float>& out_imag);
+	//void ifft1D(vector<float>& in_real, vector<float>& in_imag, vector<float>& out);
+
+	void fft1D(float* in_real, float* in_imag,  float* out_real, float* out_imag);
+	void ifft1D(float* in_real, float* in_imag, float* out_real, float* out_imag);
+
+	void fft_1d(float* in_real, float* in_imag, float* out_real, float* out_imag);
+	void ifft_1d(float* in_real, float* in_imag, float* out_real, float* out_imag);
+
 private:
 	int m_nstage; //进行几次迭代运算，如n=8的时候，m_nstage=3
 	int  m_nZeroNum;  //需要补0的个数
@@ -30,10 +39,27 @@ private:
 	vector<int> m_vecDistance; //每个阶段不同奇偶组之间的距离，如第一阶段的距离是2，第二阶段的距离是4, 第三阶段是8，...
 	vector<int> m_nSoredIndex; // 存储倒序排列后的索引, 001 --> 100 (4) 
 
+	vector<float> m_wn_real;
+	vector<float> m_wn_imag;
+
 	unsigned int bit_rev(unsigned int v, unsigned int maxv);
 	void GetSortedIndex();
 	void bit_reverse_copy(vector<complexf>& src, vector<complexf>& des);
 	void bit_reverse_copy(vector<float>& src_real, vector<float>& src_imag, 
 		vector<float>& des_real, vector<float>& des_imag);
-};
 
+	void bit_reverse_copy(float* src_real, float* src_imag, float* des_real, float* des_imag);
+
+	vector<float> m_vecWnAll;
+
+	inline int Pow2Int(int n)
+	{
+		int ret = 1;
+		while (n > 0)
+		{
+			ret = ret << 1;
+			n--;
+		}
+		return ret;
+	}
+};
